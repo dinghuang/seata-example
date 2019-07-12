@@ -4,6 +4,10 @@ import io.seata.sample.feign.UserFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import sun.awt.SunToolkit;
+
+import javax.transaction.Transactional;
+import java.text.ParseException;
 
 /**
  * @author dinghuang123@gmail.com
@@ -18,13 +22,12 @@ public class OrderService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Transactional(rollbackOn = Exception.class)
     public void create(String userId, String commodityCode, Integer count) {
 
         int orderMoney = count * 100;
         jdbcTemplate.update("insert order_tbl(user_id,commodity_code,count,money) values(?,?,?,?)",
                 new Object[]{userId, commodityCode, count, orderMoney});
-
         userFeignClient.reduce(userId, orderMoney);
-
     }
 }
